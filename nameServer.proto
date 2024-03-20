@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+message ClientInfo{
+  string id = 1;
+  string ip = 2;
+  string port = 3;
+}
+
+message Empty {}
+
+message ClientInfoList {
+  repeated ClientInfo clients = 1;
+}
+
+service NameServer {
+  rpc AddClientInfo (ClientInfo) returns (google.protobuf.Empty){}
+  rpc GetAllClientInfo(Empty) returns (ClientInfoList){}
+}
