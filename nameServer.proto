@@ -7,6 +7,15 @@ message ClientInfo{
   string port = 3;
 }
 
+message ClientId {
+  string id = 1;
+}
+
+message ClientInfoResponse {
+  string ip = 1;
+  string port = 2;
+}
+
 message Empty {}
 
 message ClientInfoList {
@@ -16,4 +25,5 @@ message ClientInfoList {
 service NameServer {
   rpc AddClientInfo (ClientInfo) returns (google.protobuf.Empty){}
   rpc GetAllClientInfo(Empty) returns (ClientInfoList){}
+  rpc GetClientInfoById(ClientId) returns (ClientInfoResponse){}
 }

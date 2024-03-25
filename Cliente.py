@@ -1,4 +1,6 @@
 import grpc
+from _socket import gethostname, gethostbyname
+
 import nameServer_pb2
 import nameServer_pb2_grpc
 
@@ -19,12 +21,15 @@ def get_all_clients(stub):
         print(f"Client ID: {client.id}, IP: {client.ip}, Port: {client.port}")
 
 
-def switch(argument):
-    switch_cases = {
-        1: run_subscribe,
-        2: run_get_all_clients
-    }
-    switch_cases.get(argument, run_get_all_clients)()
+def get_client_info_by_id(stub, client_id):
+    try:
+        response = stub.GetClientInfoById(nameServer_pb2.ClientId(id=client_id))
+        print(f"Client ID: {client_id}, IP: {response.ip}, Port: {response.port}")
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            print("Client ID not found.")
+        else:
+            print("Error:", e.details())
 
 
 def run_subscribe():
@@ -32,12 +37,16 @@ def run_subscribe():
     stub = nameServer_pb2_grpc.NameServerStub(channel)
     while True:
         client_id = input("Enter client ID: ")
-        ip = input("Enter IP address: ")
+        ip = get_ip()
         port = input("Enter port: ")
         if subscribe(stub, client_id, ip, port):
             break
 
 
+def get_ip():
+    host_name = gethostname()
+    ip = gethostbyname(host_name)
+    return ip
 def run_get_all_clients():
     channel = grpc.insecure_channel('localhost:50051')
     stub = nameServer_pb2_grpc.NameServerStub(channel)
@@ -45,10 +54,25 @@ def run_get_all_clients():
 
 
 def run():
-
-    print("Bienvenido elige una opcion: 1. Subscribirte, 2. Get all clients")
-    opcion = int(input("Elige una opcion: "))
-    switch(opcion)
+    run_subscribe()
+    while True:
+            print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
+                  "4. Acces to insult server, 0. Exit")
+            opcion = int(input("Elige una opcion: "))
+            if opcion == 1:
+                channel = grpc.insecure_channel('localhost:50051')
+                stub = nameServer_pb2_grpc.NameServerStub(channel)
+                id_amic = input("Dime un id: ")
+                get_client_info_by_id(stub, id_amic)
+            elif opcion == 2:
+                run_get_all_clients()
+            elif opcion == 3:
+                run_get_all_clients()
+            elif opcion == 0:
+                print("Saliendo...")
+                break
+            else:
+                print("Opción no válida. Por favor, seleccione una opción válida.")
 
 
 if __name__ == '__main__':

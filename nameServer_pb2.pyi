@@ -16,6 +16,20 @@ class ClientInfo(_message.Message):
     port: str
     def __init__(self, id: _Optional[str] = ..., ip: _Optional[str] = ..., port: _Optional[str] = ...) -> None: ...
 
+class ClientId(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class ClientInfoResponse(_message.Message):
+    __slots__ = ("ip", "port")
+    IP_FIELD_NUMBER: _ClassVar[int]
+    PORT_FIELD_NUMBER: _ClassVar[int]
+    ip: str
+    port: str
+    def __init__(self, ip: _Optional[str] = ..., port: _Optional[str] = ...) -> None: ...
+
 class Empty(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

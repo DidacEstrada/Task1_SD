@@ -44,6 +44,17 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
                 nameServer_pb2.ClientInfo(id=client_id, ip=ip.split(": ")[1], port=port.split(": ")[1]))
         return nameServer_pb2.ClientInfoList(clients=client_info_list)
 
+    def GetClientInfoById(self, request, context):
+        client_id = request.id
+        key = f"client:{client_id}"
+        client_data = self.redis_client.get(key)
+        if client_data:
+            ip, port = client_data.decode("utf-8").split(", ")
+            return nameServer_pb2.ClientInfoResponse(ip=ip.split(": ")[1], port=port.split(": ")[1])
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("Client ID not found.")
+            return nameServer_pb2.Empty()
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
