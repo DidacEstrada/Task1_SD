@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10nameServer.proto\x1a\x1bgoogle/protobuf/empty.proto\"2\n\nClientInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\n\n\x02ip\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\t\"\x16\n\x08\x43lientId\x12\n\n\x02id\x18\x01 \x01(\t\".\n\x12\x43lientInfoResponse\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\t\"\x07\n\x05\x45mpty\".\n\x0e\x43lientInfoList\x12\x1c\n\x07\x63lients\x18\x01 \x03(\x0b\x32\x0b.ClientInfo2\xaa\x01\n\nNameServer\x12\x36\n\rAddClientInfo\x12\x0b.ClientInfo\x1a\x16.google.protobuf.Empty\"\x00\x12-\n\x10GetAllClientInfo\x12\x06.Empty\x1a\x0f.ClientInfoList\"\x00\x12\x35\n\x11GetClientInfoById\x12\t.ClientId\x1a\x13.ClientInfoResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10nameServer.proto\x1a\x1bgoogle/protobuf/empty.proto\"2\n\nClientInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\n\n\x02ip\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\t\"\x16\n\x08\x43lientId\x12\n\n\x02id\x18\x01 \x01(\t\".\n\x12\x43lientInfoResponse\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\t\"\x07\n\x05\x45mpty\".\n\x0e\x43lientInfoList\x12\x1c\n\x07\x63lients\x18\x01 \x03(\x0b\x32\x0b.ClientInfo2\xe3\x01\n\nNameServer\x12\x36\n\rAddClientInfo\x12\x0b.ClientInfo\x1a\x16.google.protobuf.Empty\"\x00\x12-\n\x10GetAllClientInfo\x12\x06.Empty\x1a\x0f.ClientInfoList\"\x00\x12\x35\n\x11GetClientInfoById\x12\t.ClientId\x1a\x13.ClientInfoResponse\"\x00\x12\x37\n\x10\x44\x65leteClientInfo\x12\t.ClientId\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,5 +33,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_CLIENTINFOLIST']._serialized_start=182
   _globals['_CLIENTINFOLIST']._serialized_end=228
   _globals['_NAMESERVER']._serialized_start=231
-  _globals['_NAMESERVER']._serialized_end=401
+  _globals['_NAMESERVER']._serialized_end=458
 # @@protoc_insertion_point(module_scope)

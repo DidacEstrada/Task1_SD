@@ -56,6 +56,17 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
             context.set_details("Client ID not found.")
             return nameServer_pb2.Empty()
 
+    def DeleteClientInfo(self, request, context):
+        client_id = request.id
+        key = f"client:{client_id}"
+        if self.redis_client.exists(key):
+            self.redis_client.delete(key)
+            return nameServer_pb2.Empty()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("User not found")
+            return nameServer_pb2.Empty()
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     nameServer_pb2_grpc.add_NameServerServicer_to_server(NameServer(), server)

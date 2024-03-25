@@ -30,6 +30,11 @@ class NameServerStub(object):
                 request_serializer=nameServer__pb2.ClientId.SerializeToString,
                 response_deserializer=nameServer__pb2.ClientInfoResponse.FromString,
                 )
+        self.DeleteClientInfo = channel.unary_unary(
+                '/NameServer/DeleteClientInfo',
+                request_serializer=nameServer__pb2.ClientId.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class NameServerServicer(object):
@@ -53,6 +58,12 @@ class NameServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeleteClientInfo(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NameServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -70,6 +81,11 @@ def add_NameServerServicer_to_server(servicer, server):
                     servicer.GetClientInfoById,
                     request_deserializer=nameServer__pb2.ClientId.FromString,
                     response_serializer=nameServer__pb2.ClientInfoResponse.SerializeToString,
+            ),
+            'DeleteClientInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteClientInfo,
+                    request_deserializer=nameServer__pb2.ClientId.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -129,5 +145,22 @@ class NameServer(object):
         return grpc.experimental.unary_unary(request, target, '/NameServer/GetClientInfoById',
             nameServer__pb2.ClientId.SerializeToString,
             nameServer__pb2.ClientInfoResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteClientInfo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameServer/DeleteClientInfo',
+            nameServer__pb2.ClientId.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

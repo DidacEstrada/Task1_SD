@@ -25,12 +25,25 @@ def get_client_info_by_id(stub, client_id):
     try:
         response = stub.GetClientInfoById(nameServer_pb2.ClientId(id=client_id))
         print(f"Client ID: {client_id}, IP: {response.ip}, Port: {response.port}")
+        return response
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
             print("Client ID not found.")
         else:
             print("Error:", e.details())
 
+
+def delete_user(client_id):
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = nameServer_pb2_grpc.NameServerStub(channel)
+    try:
+        stub.DeleteClientInfo(nameServer_pb2.ClientId(id=client_id))
+        print(f"User with ID {client_id} deleted successfully.")
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            print("User not found.")
+        else:
+            print("Error:", e.details())
 
 def run_subscribe():
     channel = grpc.insecure_channel('localhost:50051')
@@ -41,6 +54,9 @@ def run_subscribe():
         port = input("Enter port: ")
         if subscribe(stub, client_id, ip, port):
             break
+    return client_id
+
+
 
 
 def get_ip():
@@ -53,22 +69,31 @@ def run_get_all_clients():
     get_all_clients(stub)
 
 
+def ConnectChat():
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = nameServer_pb2_grpc.NameServerStub(channel)
+    id_amic = input("Dime un id: ")
+    response = get_client_info_by_id(stub, id_amic)
+    ip_amic = response.ip
+    port_amic = response.port
+
+
+
+
 def run():
-    run_subscribe()
+    mi_id = run_subscribe()
     while True:
             print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
                   "4. Acces to insult server, 0. Exit")
             opcion = int(input("Elige una opcion: "))
             if opcion == 1:
-                channel = grpc.insecure_channel('localhost:50051')
-                stub = nameServer_pb2_grpc.NameServerStub(channel)
-                id_amic = input("Dime un id: ")
-                get_client_info_by_id(stub, id_amic)
+                ConnectChat()
             elif opcion == 2:
                 run_get_all_clients()
             elif opcion == 3:
                 run_get_all_clients()
             elif opcion == 0:
+                delete_user(mi_id)
                 print("Saliendo...")
                 break
             else:

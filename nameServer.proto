@@ -26,4 +26,5 @@ service NameServer {
   rpc AddClientInfo (ClientInfo) returns (google.protobuf.Empty){}
   rpc GetAllClientInfo(Empty) returns (ClientInfoList){}
   rpc GetClientInfoById(ClientId) returns (ClientInfoResponse){}
+  rpc DeleteClientInfo(ClientId) returns (google.protobuf.Empty){}
 }
