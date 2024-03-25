@@ -20,6 +20,12 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
         ip_address = request.ip
         port = request.port
 
+        # Verificar si el ID ya está en uso
+        if self.redis_client.exists(f"client:{client_id}"):
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("Client ID already exists. Please provide a different one.")
+            return nameServer_pb2.Empty()
+
         # Guardar en Redis
         key = f"client:{client_id}"
         value = f"IP: {ip_address}, Port: {port}"
