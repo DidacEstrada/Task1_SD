@@ -22,6 +22,8 @@ message ClientInfoList {
   repeated ClientInfo clients = 1;
 }
 
+
+
 service NameServer {
   rpc AddClientInfo (ClientInfo) returns (google.protobuf.Empty){}
   rpc GetAllClientInfo(Empty) returns (ClientInfoList){}

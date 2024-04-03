@@ -1,8 +1,32 @@
 import grpc
 from _socket import gethostname, gethostbyname
 
+import chatPrivado_pb2
+import chatPrivado_pb2_grpc
 import nameServer_pb2
 import nameServer_pb2_grpc
+
+
+class ChatServicer(chatPrivado_pb2_grpc.ChatServicer):
+    def __init__(self):
+        self.messages = []
+
+    def EnviarMissatge(self, request, context):
+        received_message = request.missatge
+        self.messages.append(received_message)
+        return chatPrivado_pb2.MisatgeRebut(missatge=f"Missatge rebut: {received_message}")
+
+    def RebreMissatge(self, request, context):
+        for message in self.messages:
+            yield chatPrivado_pb2.MisatgeRebut(missatge=message)
+
+def serve():
+    server = grpc.server(grpc.insecure_channel())
+    chatPrivado_pb2_grpc.add_ChatServicer_to_server(ChatServicer(), server)
+    server.add_insecure_port('0.0.0.0:50051')
+    server.start()
+    server.wait_for_termination()
+
 
 
 def subscribe(stub, client_id, ip, port):
@@ -81,6 +105,7 @@ def ConnectChat():
 
 
 def run():
+    serve()
     mi_id = run_subscribe()
     while True:
             print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "

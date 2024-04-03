@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message MisatgeRebut {
+  string missatge = 1;
+}
+
+message MisatgeEnviat {
+  string missatge = 1;
+}
+
+message Empty {}
+
+service Chat {
+  rpc EnviarMissatge(MisatgeEnviat) returns (MisatgeRebut) {}
+  rpc RebreMissatge(Empty) returns (stream MisatgeRebut) {}
+}
+
