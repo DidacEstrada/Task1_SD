@@ -17,16 +17,16 @@ class ChatServicer(chatPrivado_pb2_grpc.ChatServicer):
     def EnviarMissatge(self, request, context):
         received_message = request.missatge
         self.messages.append(received_message)
-        return chatPrivado_pb2.MisatgeRebut(missatge=f"Missatge rebut: {received_message}")
+        return chatPrivado_pb2.Misatge(missatge=f"Missatge rebut: {received_message}")
 
-    def RebreMissatge(self, request, context):
-        for message in self.messages:
-            yield chatPrivado_pb2.MisatgeRebut(missatge=message)
 
-def serve(ip, port):
+
+
+async def serve(ip, port):
     server = grpc.aio.server(ThreadPoolExecutor())
     chatPrivado_pb2_grpc.add_ChatServicer_to_server(ChatServicer(), server)
-    server.add_insecure_port(f'{ip}:{port}')
+    server.add_insecure_port(f'localhost:{port}')
+    await server.start()
 
 def subscribe(stub, client_id, ip, port):
     try:
@@ -94,7 +94,7 @@ def run_get_all_clients():
     get_all_clients(stub)
 
 
-def ConnectChat():
+async def ConnectChat():
         channel = grpc.insecure_channel('localhost:50051')
         stub = nameServer_pb2_grpc.NameServerStub(channel)
         while True:
@@ -103,28 +103,44 @@ def ConnectChat():
             if response:
                 ip_amic = response.ip
                 port_amic = response.port
+                try:
+                    # Intentar conectarse al servidor gRPC
+                    channel2 = grpc.aio.insecure_channel(f'localhost:{port_amic}')
+                    while True:
+                        state = channel2.get_state(True)
+                        if state == grpc.ChannelConnectivity.READY:
+                            print("Conexión exitosa con el servidor gRPC.")
+                            break
+                        await asyncio.sleep(0.1)
+                except grpc.aio.AioRpcError as e:
+                    # Capturar errores de conexión
+                    print("Error al conectar con el servidor gRPC:", e)
 
-                chat_channel = grpc.insecure_channel(f"{ip_amic}:{port_amic}")
+                chat_channel = grpc.insecure_channel(f'localhost:{port_amic}')
                 chat_stub = chatPrivado_pb2_grpc.ChatStub(chat_channel)
+
+
                 while True:
                     mensaje = input("Tú: ")
-                    respuesta = chat_stub.EnviarMissatge(chatPrivado_pb2.MisatgeEnviat(missatge=mensaje))
-                    print(f"{id_amic}: {respuesta.missatge}")
+                    respuesta = chat_stub.EnviarMissatge(chatPrivado_pb2.Misatge(missatge=mensaje))
+                    print(f"{id_amic}: {mensaje}")
             else:
                 print("El cliente con el ID proporcionado no está disponible.")
                 opcion = input("¿Quieres intentar con otro ID? (y/n): ")
                 if opcion.lower() != 'y':
-                    return  # Devolver el control a run() después de ConnectChat()
+                    break
 
-def run():
+
+
+async def run():
     mi_id, ip, port = run_subscribe()
-    serve(ip, port)
+    await serve(ip, port)
     while True:
             print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
                   "4. Acces to insult server, 0. Exit")
             opcion = int(input("Elige una opcion: "))
             if opcion == 1:
-                ConnectChat()
+                await ConnectChat()
             elif opcion == 2:
                 run_get_all_clients()
             elif opcion == 3:
@@ -138,4 +154,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    asyncio.run(run())

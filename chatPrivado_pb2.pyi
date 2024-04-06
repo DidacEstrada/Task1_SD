@@ -5,13 +5,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class MisatgeRebut(_message.Message):
-    __slots__ = ("missatge",)
-    MISSATGE_FIELD_NUMBER: _ClassVar[int]
-    missatge: str
-    def __init__(self, missatge: _Optional[str] = ...) -> None: ...
-
-class MisatgeEnviat(_message.Message):
+class Misatge(_message.Message):
     __slots__ = ("missatge",)
     MISSATGE_FIELD_NUMBER: _ClassVar[int]
     missatge: str

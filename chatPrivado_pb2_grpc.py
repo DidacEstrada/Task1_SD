@@ -16,13 +16,8 @@ class ChatStub(object):
         """
         self.EnviarMissatge = channel.unary_unary(
                 '/Chat/EnviarMissatge',
-                request_serializer=chatPrivado__pb2.MisatgeEnviat.SerializeToString,
-                response_deserializer=chatPrivado__pb2.MisatgeRebut.FromString,
-                )
-        self.RebreMissatge = channel.unary_stream(
-                '/Chat/RebreMissatge',
-                request_serializer=chatPrivado__pb2.chatEmpty.SerializeToString,
-                response_deserializer=chatPrivado__pb2.MisatgeRebut.FromString,
+                request_serializer=chatPrivado__pb2.Misatge.SerializeToString,
+                response_deserializer=chatPrivado__pb2.Misatge.FromString,
                 )
 
 
@@ -35,24 +30,13 @@ class ChatServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RebreMissatge(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_ChatServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'EnviarMissatge': grpc.unary_unary_rpc_method_handler(
                     servicer.EnviarMissatge,
-                    request_deserializer=chatPrivado__pb2.MisatgeEnviat.FromString,
-                    response_serializer=chatPrivado__pb2.MisatgeRebut.SerializeToString,
-            ),
-            'RebreMissatge': grpc.unary_stream_rpc_method_handler(
-                    servicer.RebreMissatge,
-                    request_deserializer=chatPrivado__pb2.chatEmpty.FromString,
-                    response_serializer=chatPrivado__pb2.MisatgeRebut.SerializeToString,
+                    request_deserializer=chatPrivado__pb2.Misatge.FromString,
+                    response_serializer=chatPrivado__pb2.Misatge.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -76,24 +60,7 @@ class Chat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Chat/EnviarMissatge',
-            chatPrivado__pb2.MisatgeEnviat.SerializeToString,
-            chatPrivado__pb2.MisatgeRebut.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def RebreMissatge(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/Chat/RebreMissatge',
-            chatPrivado__pb2.chatEmpty.SerializeToString,
-            chatPrivado__pb2.MisatgeRebut.FromString,
+            chatPrivado__pb2.Misatge.SerializeToString,
+            chatPrivado__pb2.Misatge.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

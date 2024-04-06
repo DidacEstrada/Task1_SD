@@ -1,18 +1,14 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 
-message MisatgeRebut {
+message Misatge {
   string missatge = 1;
 }
 
-message MisatgeEnviat {
-  string missatge = 1;
-}
 
 message chatEmpty {}
 
 service Chat {
-  rpc EnviarMissatge(MisatgeEnviat) returns (MisatgeRebut) {}
-  rpc RebreMissatge(chatEmpty) returns (stream MisatgeRebut) {}
+  rpc EnviarMissatge(Misatge) returns (Misatge) {}
 }
 
