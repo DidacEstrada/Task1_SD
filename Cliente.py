@@ -106,24 +106,20 @@ async def ConnectChat():
                 try:
                     # Intentar conectarse al servidor gRPC
                     channel2 = grpc.aio.insecure_channel(f'localhost:{port_amic}')
+                    chat_stub = chatPrivado_pb2_grpc.ChatStub(channel2)
                     while True:
                         state = channel2.get_state(True)
                         if state == grpc.ChannelConnectivity.READY:
                             print("Conexión exitosa con el servidor gRPC.")
+                            mensaje = input("Tú: ")
+                            respuesta = chat_stub.EnviarMissatge(chatPrivado_pb2.Misatge(missatge=mensaje))
+                            print("Mensaje enviado")
                             break
                         await asyncio.sleep(0.1)
                 except grpc.aio.AioRpcError as e:
                     # Capturar errores de conexión
                     print("Error al conectar con el servidor gRPC:", e)
 
-                chat_channel = grpc.insecure_channel(f'localhost:{port_amic}')
-                chat_stub = chatPrivado_pb2_grpc.ChatStub(chat_channel)
-
-
-                while True:
-                    mensaje = input("Tú: ")
-                    respuesta = chat_stub.EnviarMissatge(chatPrivado_pb2.Misatge(missatge=mensaje))
-                    print(f"{id_amic}: {mensaje}")
             else:
                 print("El cliente con el ID proporcionado no está disponible.")
                 opcion = input("¿Quieres intentar con otro ID? (y/n): ")
