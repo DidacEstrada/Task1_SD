@@ -1,3 +1,4 @@
+from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Optional as _Optional
@@ -16,6 +17,6 @@ class MisatgeEnviat(_message.Message):
     missatge: str
     def __init__(self, missatge: _Optional[str] = ...) -> None: ...
 
-class Empty(_message.Message):
+class chatEmpty(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

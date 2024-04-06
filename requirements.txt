@@ -1,4 +1,4 @@
-redis
+redis~=5.0.3
 grpcio
 grpcio-tools
 google~=3.0.0

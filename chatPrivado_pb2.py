@@ -12,21 +12,22 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63hatPrivado.proto\" \n\x0cMisatgeRebut\x12\x10\n\x08missatge\x18\x01 \x01(\t\"!\n\rMisatgeEnviat\x12\x10\n\x08missatge\x18\x01 \x01(\t\"\x07\n\x05\x45mpty2e\n\x04\x43hat\x12\x31\n\x0e\x45nviarMissatge\x12\x0e.MisatgeEnviat\x1a\r.MisatgeRebut\"\x00\x12*\n\rRebreMissatge\x12\x06.Empty\x1a\r.MisatgeRebut\"\x00\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63hatPrivado.proto\x1a\x1bgoogle/protobuf/empty.proto\" \n\x0cMisatgeRebut\x12\x10\n\x08missatge\x18\x01 \x01(\t\"!\n\rMisatgeEnviat\x12\x10\n\x08missatge\x18\x01 \x01(\t\"\x0b\n\tchatEmpty2i\n\x04\x43hat\x12\x31\n\x0e\x45nviarMissatge\x12\x0e.MisatgeEnviat\x1a\r.MisatgeRebut\"\x00\x12.\n\rRebreMissatge\x12\n.chatEmpty\x1a\r.MisatgeRebut\"\x00\x30\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chatPrivado_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_MISATGEREBUT']._serialized_start=21
-  _globals['_MISATGEREBUT']._serialized_end=53
-  _globals['_MISATGEENVIAT']._serialized_start=55
-  _globals['_MISATGEENVIAT']._serialized_end=88
-  _globals['_EMPTY']._serialized_start=90
-  _globals['_EMPTY']._serialized_end=97
-  _globals['_CHAT']._serialized_start=99
-  _globals['_CHAT']._serialized_end=200
+  _globals['_MISATGEREBUT']._serialized_start=50
+  _globals['_MISATGEREBUT']._serialized_end=82
+  _globals['_MISATGEENVIAT']._serialized_start=84
+  _globals['_MISATGEENVIAT']._serialized_end=117
+  _globals['_CHATEMPTY']._serialized_start=119
+  _globals['_CHATEMPTY']._serialized_end=130
+  _globals['_CHAT']._serialized_start=132
+  _globals['_CHAT']._serialized_end=237
 # @@protoc_insertion_point(module_scope)

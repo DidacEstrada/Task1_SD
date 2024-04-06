@@ -21,7 +21,7 @@ class ChatStub(object):
                 )
         self.RebreMissatge = channel.unary_stream(
                 '/Chat/RebreMissatge',
-                request_serializer=chatPrivado__pb2.Empty.SerializeToString,
+                request_serializer=chatPrivado__pb2.chatEmpty.SerializeToString,
                 response_deserializer=chatPrivado__pb2.MisatgeRebut.FromString,
                 )
 
@@ -51,7 +51,7 @@ def add_ChatServicer_to_server(servicer, server):
             ),
             'RebreMissatge': grpc.unary_stream_rpc_method_handler(
                     servicer.RebreMissatge,
-                    request_deserializer=chatPrivado__pb2.Empty.FromString,
+                    request_deserializer=chatPrivado__pb2.chatEmpty.FromString,
                     response_serializer=chatPrivado__pb2.MisatgeRebut.SerializeToString,
             ),
     }
@@ -93,7 +93,7 @@ class Chat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/Chat/RebreMissatge',
-            chatPrivado__pb2.Empty.SerializeToString,
+            chatPrivado__pb2.chatEmpty.SerializeToString,
             chatPrivado__pb2.MisatgeRebut.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -1,3 +1,6 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
 import grpc
 from _socket import gethostname, gethostbyname
 
@@ -20,14 +23,12 @@ class ChatServicer(chatPrivado_pb2_grpc.ChatServicer):
         for message in self.messages:
             yield chatPrivado_pb2.MisatgeRebut(missatge=message)
 
-def serve():
-    server = grpc.server(grpc.insecure_channel())
+def serve(ip, port):
+    server = grpc.aio.server(ThreadPoolExecutor())
     chatPrivado_pb2_grpc.add_ChatServicer_to_server(ChatServicer(), server)
-    server.add_insecure_port('0.0.0.0:50051')
+    server.add_insecure_port(f'{ip}:{port}')
     server.start()
     server.wait_for_termination()
-
-
 
 def subscribe(stub, client_id, ip, port):
     try:
@@ -69,6 +70,7 @@ def delete_user(client_id):
         else:
             print("Error:", e.details())
 
+
 def run_subscribe():
     channel = grpc.insecure_channel('localhost:50051')
     stub = nameServer_pb2_grpc.NameServerStub(channel)
@@ -78,7 +80,7 @@ def run_subscribe():
         port = input("Enter port: ")
         if subscribe(stub, client_id, ip, port):
             break
-    return client_id
+    return client_id, ip, port
 
 
 
@@ -87,6 +89,7 @@ def get_ip():
     host_name = gethostname()
     ip = gethostbyname(host_name)
     return ip
+
 def run_get_all_clients():
     channel = grpc.insecure_channel('localhost:50051')
     stub = nameServer_pb2_grpc.NameServerStub(channel)
@@ -96,17 +99,37 @@ def run_get_all_clients():
 def ConnectChat():
     channel = grpc.insecure_channel('localhost:50051')
     stub = nameServer_pb2_grpc.NameServerStub(channel)
-    id_amic = input("Dime un id: ")
-    response = get_client_info_by_id(stub, id_amic)
-    ip_amic = response.ip
-    port_amic = response.port
+    while True:
+        id_amic = input("Dime un id: ")
+        response = get_client_info_by_id(stub, id_amic)
+        if response:
+            ip_amic = response.ip
+            port_amic = response.port
 
+            chat_channel = grpc.insecure_channel(f"{ip_amic}:{port_amic}")
+            chat_stub = chatPrivado_pb2_grpc.ChatStub(chat_channel)
 
+            async def send_message():
+                while True:
+                    mensaje = input("Tú: ")
+                    respuesta = await chat_stub.EnviarMissatge(chatPrivado_pb2.MisatgeEnviat(missatge=mensaje))
+                    print(f"{id_amic}: {respuesta.missatge}")
 
+            async def receive_messages():
+                async for mensaje_entrante in chat_stub.RebreMissatge(chatPrivado_pb2.chatEmpty()):
+                    print(f"{id_amic}: {mensaje_entrante.missatge}")
+
+                await asyncio.gather(send_message(), receive_messages())
+            break
+        else:
+            print("El cliente con el ID proporcionado no está disponible.")
+            opcion = input("¿Quieres intentar con otro ID? (y/n): ")
+            if opcion.lower() != 'y':
+                break
 
 def run():
-    serve()
-    mi_id = run_subscribe()
+    mi_id, ip, port = run_subscribe()
+    serve(ip, port)
     while True:
             print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
                   "4. Acces to insult server, 0. Exit")
