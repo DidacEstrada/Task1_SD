@@ -27,8 +27,6 @@ def serve(ip, port):
     server = grpc.aio.server(ThreadPoolExecutor())
     chatPrivado_pb2_grpc.add_ChatServicer_to_server(ChatServicer(), server)
     server.add_insecure_port(f'{ip}:{port}')
-    server.start()
-    server.wait_for_termination()
 
 def subscribe(stub, client_id, ip, port):
     try:
@@ -97,35 +95,26 @@ def run_get_all_clients():
 
 
 def ConnectChat():
-    channel = grpc.insecure_channel('localhost:50051')
-    stub = nameServer_pb2_grpc.NameServerStub(channel)
-    while True:
-        id_amic = input("Dime un id: ")
-        response = get_client_info_by_id(stub, id_amic)
-        if response:
-            ip_amic = response.ip
-            port_amic = response.port
+        channel = grpc.insecure_channel('localhost:50051')
+        stub = nameServer_pb2_grpc.NameServerStub(channel)
+        while True:
+            id_amic = input("Dime un id: ")
+            response = get_client_info_by_id(stub, id_amic)
+            if response:
+                ip_amic = response.ip
+                port_amic = response.port
 
-            chat_channel = grpc.insecure_channel(f"{ip_amic}:{port_amic}")
-            chat_stub = chatPrivado_pb2_grpc.ChatStub(chat_channel)
-
-            async def send_message():
+                chat_channel = grpc.insecure_channel(f"{ip_amic}:{port_amic}")
+                chat_stub = chatPrivado_pb2_grpc.ChatStub(chat_channel)
                 while True:
                     mensaje = input("Tú: ")
-                    respuesta = await chat_stub.EnviarMissatge(chatPrivado_pb2.MisatgeEnviat(missatge=mensaje))
+                    respuesta = chat_stub.EnviarMissatge(chatPrivado_pb2.MisatgeEnviat(missatge=mensaje))
                     print(f"{id_amic}: {respuesta.missatge}")
-
-            async def receive_messages():
-                async for mensaje_entrante in chat_stub.RebreMissatge(chatPrivado_pb2.chatEmpty()):
-                    print(f"{id_amic}: {mensaje_entrante.missatge}")
-
-                await asyncio.gather(send_message(), receive_messages())
-            break
-        else:
-            print("El cliente con el ID proporcionado no está disponible.")
-            opcion = input("¿Quieres intentar con otro ID? (y/n): ")
-            if opcion.lower() != 'y':
-                break
+            else:
+                print("El cliente con el ID proporcionado no está disponible.")
+                opcion = input("¿Quieres intentar con otro ID? (y/n): ")
+                if opcion.lower() != 'y':
+                    return  # Devolver el control a run() después de ConnectChat()
 
 def run():
     mi_id, ip, port = run_subscribe()
