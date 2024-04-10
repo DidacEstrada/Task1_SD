@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63hatPrivado.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x1b\n\x07Misatge\x12\x10\n\x08missatge\x18\x01 \x01(\t\"\x0b\n\tchatEmpty2.\n\x04\x43hat\x12&\n\x0e\x45nviarMissatge\x12\x08.Misatge\x1a\x08.Misatge\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63hatPrivado.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x1a\n\x07Misatge\x12\x0f\n\x07misatge\x18\x01 \x01(\t2;\n\x04\x43hat\x12\x33\n\rEnviarMisatge\x12\x08.Misatge\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,9 +23,7 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chatPrivado_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_MISATGE']._serialized_start=50
-  _globals['_MISATGE']._serialized_end=77
-  _globals['_CHATEMPTY']._serialized_start=79
-  _globals['_CHATEMPTY']._serialized_end=90
-  _globals['_CHAT']._serialized_start=92
-  _globals['_CHAT']._serialized_end=138
+  _globals['_MISATGE']._serialized_end=76
+  _globals['_CHAT']._serialized_start=78
+  _globals['_CHAT']._serialized_end=137
 # @@protoc_insertion_point(module_scope)

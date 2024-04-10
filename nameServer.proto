@@ -5,10 +5,16 @@ message ClientInfo{
   string id = 1;
   string ip = 2;
   string port = 3;
+  bool status = 4;
 }
 
 message ClientId {
   string id = 1;
+}
+
+message ClientStatus{
+  string id = 1;
+  bool status = 2;
 }
 
 message ClientInfoResponse {
@@ -29,4 +35,5 @@ service NameServer {
   rpc GetAllClientInfo(Empty) returns (ClientInfoList){}
   rpc GetClientInfoById(ClientId) returns (ClientInfoResponse){}
   rpc DeleteClientInfo(ClientId) returns (google.protobuf.Empty){}
+  rpc ChangeStatus(ClientStatus) returns (google.protobuf.Empty) {}
 }

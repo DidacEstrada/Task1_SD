@@ -7,20 +7,30 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ClientInfo(_message.Message):
-    __slots__ = ("id", "ip", "port")
+    __slots__ = ("id", "ip", "port", "status")
     ID_FIELD_NUMBER: _ClassVar[int]
     IP_FIELD_NUMBER: _ClassVar[int]
     PORT_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
     id: str
     ip: str
     port: str
-    def __init__(self, id: _Optional[str] = ..., ip: _Optional[str] = ..., port: _Optional[str] = ...) -> None: ...
+    status: bool
+    def __init__(self, id: _Optional[str] = ..., ip: _Optional[str] = ..., port: _Optional[str] = ..., status: bool = ...) -> None: ...
 
 class ClientId(_message.Message):
     __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class ClientStatus(_message.Message):
+    __slots__ = ("id", "status")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    status: bool
+    def __init__(self, id: _Optional[str] = ..., status: bool = ...) -> None: ...
 
 class ClientInfoResponse(_message.Message):
     __slots__ = ("ip", "port")

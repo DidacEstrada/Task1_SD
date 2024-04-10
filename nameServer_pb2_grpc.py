@@ -35,6 +35,11 @@ class NameServerStub(object):
                 request_serializer=nameServer__pb2.ClientId.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.ChangeStatus = channel.unary_unary(
+                '/NameServer/ChangeStatus',
+                request_serializer=nameServer__pb2.ClientStatus.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class NameServerServicer(object):
@@ -64,6 +69,12 @@ class NameServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ChangeStatus(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NameServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -85,6 +96,11 @@ def add_NameServerServicer_to_server(servicer, server):
             'DeleteClientInfo': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteClientInfo,
                     request_deserializer=nameServer__pb2.ClientId.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ChangeStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.ChangeStatus,
+                    request_deserializer=nameServer__pb2.ClientStatus.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -161,6 +177,23 @@ class NameServer(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/NameServer/DeleteClientInfo',
             nameServer__pb2.ClientId.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ChangeStatus(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameServer/ChangeStatus',
+            nameServer__pb2.ClientStatus.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

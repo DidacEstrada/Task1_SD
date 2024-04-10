@@ -2,13 +2,11 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 message Misatge {
-  string missatge = 1;
+  string misatge = 1;
 }
 
 
-message chatEmpty {}
-
 service Chat {
-  rpc EnviarMissatge(Misatge) returns (Misatge) {}
+  rpc EnviarMisatge (Misatge) returns (google.protobuf.Empty) {}
 }
 
