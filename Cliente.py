@@ -26,7 +26,7 @@ def subscribe(stub, client_id, ip, port):
 def get_all_clients(stub):
     response = stub.GetAllClientInfo(nameServer_pb2.Empty())
     for client in response.clients:
-        print(f"Client ID: {client.id}, IP: {client.ip}, Port: {client.port}")
+        print(f"Client ID: {client.id}, IP: {client.ip}, Port: {client.port}, Status: {client.status}")
 
 
 def get_client_info_by_id(stub, client_id):
@@ -78,42 +78,43 @@ def run_get_all_clients():
     get_all_clients(stub)
 
 
-def ConnectChat(ip_amic, port_amic, port):
-    try:
-        # Intentar conectarse a los servidores gRPC
-        channel2 = grpc.insecure_channel(f'localhost:{port_amic}')
-        chat_stub = chatPrivado_pb2_grpc.ChatStub(channel2)
-        while True:
-            print("Conexión exitosa con el servidor gRPC.")
-            mensaje = input("Tú: ")
-            chat_stub.EnviarMissatge(chatPrivado_pb2.Misatge(missatge=mensaje))
-            print("Mensaje enviado")
-            # mensajes_recibidos = mi_chat_stub.RecibirMensajes(request)
-            # for misatge in mensajes_recibidos.misatges:
-            #    print(f"{misatge}")
+def ConnectChat(ip_amic, port_amic, status_amic, mi_id):
+    if status_amic == True:
+        try:
+            # Intentar conectarse a los servidores gRPC
+            channel2 = grpc.insecure_channel(f'localhost:{port_amic}')
+            chat_stub = chatPrivado_pb2_grpc.ChatStub(channel2)
+            print("Chat Iniciado")
+            chat = True
+            while chat:
+                mensaje = input()
+                chat_stub.EnviarMisatge(chatPrivado_pb2.Misatge(id=mi_id, misatge=mensaje))
+                print("Mensaje enviado")
+                if mensaje == "Adeu":
+                    chat = False
 
-    except grpc.aio.AioRpcError as e:
-        # Capturar errores de conexión
-        print("Error al conectar con el servidor gRPC:", e)
+        except grpc.aio.AioRpcError as e:
+            # Capturar errores de conexión
+            print("Error al conectar con el servidor gRPC:", e)
+    else:
+        print("No esta conectat")
 
 
 def test():
     # open a gRPC channel
     channel = grpc.insecure_channel('localhost:50052')
-
     # create a stub (client)
     stub = chatPrivado_pb2_grpc.ChatStub(channel)
-
     # create a valid request message
     misatge = chatPrivado_pb2.Misatge(misatge='Hola')
     stub.EnviarMisatge(misatge)
 
 
-def canviarStatus():
-    channel = grpc.insecure_channel('localhost:50052')
+def canviarStatus(client_id, new_status):
+    channel = grpc.insecure_channel('localhost:50051')
     # create a stub (client)
-    stub = chatPrivado_pb2_grpc.ChatStub(channel)
-    misatge =
+    stub = nameServer_pb2_grpc.NameServerStub(channel)
+    request = stub.ChangeStatus(nameServer_pb2.ClientStatus(id=client_id, status=new_status))
 
 
 
@@ -128,7 +129,8 @@ def SaberDadesAmic():
         if response:
             ip_amic = response.ip
             port_amic = response.port
-            return ip_amic, port_amic
+            status_amic = response.status
+            return ip_amic, port_amic, status_amic
 
         else:
             print("El cliente con el ID proporcionado no está disponible.")
@@ -141,16 +143,18 @@ def SaberDadesAmic():
 
 def run():
     mi_id, ip, port = run_subscribe()
-    threading.Thread(target=grpc_chatPrivadoServer.serve).start()
+    threading.Thread(target=grpc_chatPrivadoServer.serve, args=(port,)).start()
     time.sleep(0.5)
     while True:
         print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
               "4. Acces to insult server, 0. Exit")
         opcion = int(input("Elige una opcion: "))
         if opcion == 1:
-            ip_amic, port_amic = SaberDadesAmic()
+            canviarStatus(mi_id, True)
+            ip_amic, port_amic, status_amic = SaberDadesAmic()
             if port_amic != "n":
-                test()
+                ConnectChat(ip_amic, port_amic, status_amic, mi_id)
+            canviarStatus(mi_id, False)
         elif opcion == 2:
             run_get_all_clients()
         elif opcion == 3:

@@ -15,7 +15,7 @@ class ChatPrivadoServiceServicer(chatPrivado_pb2_grpc.ChatServicer):
         return response
 
 
-def serve():
+def serve(port):
     # create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
@@ -25,8 +25,8 @@ def serve():
         ChatPrivadoServiceServicer(), server)
 
     # listen on port 50052
-    print('Starting server. Listening on port 50052.')
-    server.add_insecure_port('0.0.0.0:50053')
+    print(f'Starting server. Listening on port {port}.')
+    server.add_insecure_port(f'0.0.0.0:{port}')
     server.start()
 
     # since server.start() will not block,

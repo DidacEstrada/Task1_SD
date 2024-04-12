@@ -20,6 +20,7 @@ message ClientStatus{
 message ClientInfoResponse {
   string ip = 1;
   string port = 2;
+  bool status = 3;
 }
 
 message Empty {}

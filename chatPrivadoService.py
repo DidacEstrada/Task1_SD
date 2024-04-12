@@ -3,7 +3,7 @@ class ChatPrivadoService:
         self.misatges_list = []
 
     def enviarmisatge(self, request):
-        print('Misatge rebut: ' + request.misatge)
+        print(f'{request.id}: {request.misatge}')
         return 'Done'
 
 

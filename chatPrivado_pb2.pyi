@@ -6,7 +6,9 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Misatge(_message.Message):
-    __slots__ = ("misatge",)
+    __slots__ = ("id", "misatge")
+    ID_FIELD_NUMBER: _ClassVar[int]
     MISATGE_FIELD_NUMBER: _ClassVar[int]
+    id: str
     misatge: str
-    def __init__(self, misatge: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., misatge: _Optional[str] = ...) -> None: ...

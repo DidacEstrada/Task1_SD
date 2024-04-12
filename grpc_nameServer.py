@@ -40,10 +40,12 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
         for key in keys:
             client_id = key.decode("utf-8").split(":")[1]
             client_data = self.redis_client.get(key).decode("utf-8")
-            ip, port, status = client_data.split(", ")
+            ip, port, status_str = client_data.split(", ")
+            status_str_l = status_str.split(": ")[1].lower()
+            status = status_str_l == "true"  #si status_str_l es true es printara true sino false
             client_info_list.append(
-                nameServer_pb2.ClientInfo(id=client_id, ip=ip.split(": ")[1], port=port.split(": ")[1],
-                                          status=status.split(": ")[1]))
+                nameServer_pb2.ClientInfo(id=client_id, ip=ip.split(": ")[1], port=port.split(": ")[1], status=status)
+            )
         return nameServer_pb2.ClientInfoList(clients=client_info_list)
 
     def GetClientInfoById(self, request, context):
@@ -51,8 +53,21 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
         key = f"client:{client_id}"
         client_data = self.redis_client.get(key)
         if client_data:
-            ip, port = client_data.decode("utf-8").split(", ")
-            return nameServer_pb2.ClientInfoResponse(ip=ip.split(": ")[1], port=port.split(": ")[1])
+            # Imprimir el valor de client_data antes de la división
+            print("Client data before split:", client_data)
+
+            # Dividir la cadena y obtener los componentes
+            ip, port, status_str = client_data.decode("utf-8").split(", ")
+            status_str_l = status_str.split(": ")[1].lower()
+            status = status_str_l == "true"  # si status_str_l es true es printara true sino false
+
+            # Imprimir los componentes después de la división
+            print("IP:", ip)
+            print("Port:", port)
+            print("Status:", status)
+
+            # Construir la respuesta con los componentes
+            return nameServer_pb2.ClientInfoResponse(ip=ip.split(": ")[1], port=port.split(": ")[1], status=status)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             context.set_details("Client ID not found.")
@@ -77,7 +92,7 @@ class NameServer(nameServer_pb2_grpc.NameServerServicer):
         if client_data:
             ip, port, status = client_data.decode("utf-8").split(", ")
             # Actualizar el estado del cliente
-            updated_client_data = f"IP: {ip}, Port: {port}, Status: {new_status}"
+            updated_client_data = f"IP: {ip.split(": ")[1]}, Port: {port.split(": ")[1]}, Status: {new_status}"
             self.redis_client.set(key, updated_client_data)
             return nameServer_pb2.Empty()
         else:

@@ -33,12 +33,14 @@ class ClientStatus(_message.Message):
     def __init__(self, id: _Optional[str] = ..., status: bool = ...) -> None: ...
 
 class ClientInfoResponse(_message.Message):
-    __slots__ = ("ip", "port")
+    __slots__ = ("ip", "port", "status")
     IP_FIELD_NUMBER: _ClassVar[int]
     PORT_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
     ip: str
     port: str
-    def __init__(self, ip: _Optional[str] = ..., port: _Optional[str] = ...) -> None: ...
+    status: bool
+    def __init__(self, ip: _Optional[str] = ..., port: _Optional[str] = ..., status: bool = ...) -> None: ...
 
 class Empty(_message.Message):
     __slots__ = ()
