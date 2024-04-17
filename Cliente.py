@@ -1,10 +1,9 @@
-import asyncio
-from concurrent import futures
 import time
 import threading
 
 import grpc
 from _socket import gethostname, gethostbyname
+from messageBroker import messageBroker
 
 import chatPrivado_pb2
 import chatPrivado_pb2_grpc
@@ -140,6 +139,21 @@ def SaberDadesAmic():
                 port_amic = "n"  # Controlar decisions
                 return ip_amic, port_amic
 
+def subscribe_groupChat():
+    message_broker = messageBroker()
+
+    chat_id = input("Ingrese la ID del chat grupal al que desea suscribirse o crear: ")
+
+    # Verificar si el chat grupal ya existe en RabbitMQ
+    if message_broker.group_chat_exists(chat_id):
+        # Si el chat grupal ya existe, suscribirse a él
+        message_broker.subscribe_to_group_chat(chat_id) # Hay que crearlo en el messageBroker!!!
+        print(f"Te has suscrito al chat grupal '{chat_id}'.")
+    else:
+        # Si el chat grupal no existe, crearlo y luego suscribirse a él
+        message_broker.create_group_chat(chat_id)
+        message_broker.subscribe_to_group_chat(chat_id)
+        print(f"Chat grupal '{chat_id}' creado y te has suscrito correctamente.")
 
 def run():
     mi_id, ip, port = run_subscribe()
@@ -156,7 +170,7 @@ def run():
                 ConnectChat(ip_amic, port_amic, status_amic, mi_id)
             canviarStatus(mi_id, False)
         elif opcion == 2:
-            run_get_all_clients()
+            subscribe_groupChat()
         elif opcion == 3:
             run_get_all_clients()
         elif opcion == 0:
