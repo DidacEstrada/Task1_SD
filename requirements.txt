@@ -3,3 +3,4 @@ grpcio
 grpcio-tools
 google~=3.0.0
 pika~=1.3.2
+requests

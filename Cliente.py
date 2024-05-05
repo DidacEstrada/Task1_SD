@@ -1,9 +1,11 @@
+import json
 import time
 import threading
 
 import grpc
 from _socket import gethostname, gethostbyname
-from messageBroker import messageBroker
+from functools import partial
+from RabbitMQServer import RabbitMQServer
 
 import chatPrivado_pb2
 import chatPrivado_pb2_grpc
@@ -116,9 +118,6 @@ def canviarStatus(client_id, new_status):
     request = stub.ChangeStatus(nameServer_pb2.ClientStatus(id=client_id, status=new_status))
 
 
-
-
-
 def SaberDadesAmic():
     channel = grpc.insecure_channel('localhost:50051')
     stub = nameServer_pb2_grpc.NameServerStub(channel)
@@ -139,25 +138,41 @@ def SaberDadesAmic():
                 port_amic = "n"  # Controlar decisions
                 return ip_amic, port_amic
 
-def subscribe_groupChat():
-    message_broker = messageBroker()
 
-    chat_id = input("Ingrese la ID del chat grupal al que desea suscribirse o crear: ")
+def callback(ch, method, properties, body):
+    print("Mensaje recibido:", body.decode('utf-8'))
 
-    # Verificar si el chat grupal ya existe en RabbitMQ
-    if message_broker.group_chat_exists(chat_id):
-        # Si el chat grupal ya existe, suscribirse a él
-        message_broker.subscribe_to_group_chat(chat_id) # Hay que crearlo en el messageBroker!!!
-        print(f"Te has suscrito al chat grupal '{chat_id}'.")
-    else:
-        # Si el chat grupal no existe, crearlo y luego suscribirse a él
-        message_broker.create_group_chat(chat_id)
-        message_broker.subscribe_to_group_chat(chat_id)
-        print(f"Chat grupal '{chat_id}' creado y te has suscrito correctamente.")
+
+def callback_discovery(ch, method, properties, body, server, mi_id, ip, port):
+    response = {
+        "id": mi_id,
+        "ip": ip,
+        "port": port,
+    }
+
+    message_body = json.dumps(response).encode('utf-8')
+    server.publish_message("chat_discovery_exchange", "chat_discovery_key", message_body)
+
+
+def chat_grupal(server, grup_id):
+    grup_key = grup_id + '_key'
+    chat = True
+    while chat:
+        mensaje = input()
+        server.publish_message("chat_group_exchange", grup_key, mensaje)
+        print("Mensaje enviado")
+        if mensaje == "Adeu":
+            chat = False
+
 
 def run():
+
     mi_id, ip, port = run_subscribe()
     threading.Thread(target=grpc_chatPrivadoServer.serve, args=(port,)).start()
+    server = RabbitMQServer()
+    server.connect()
+    server.subscribe_to_discovery_events(partial(callback_discovery, server=server, mi_id=mi_id, ip=ip, port=port))
+    threading.Thread(target=server.start_consuming).start()
     time.sleep(0.5)
     while True:
         print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
@@ -170,11 +185,26 @@ def run():
                 ConnectChat(ip_amic, port_amic, status_amic, mi_id)
             canviarStatus(mi_id, False)
         elif opcion == 2:
-            subscribe_groupChat()
+            grup_id = input("Dime el nombre del grupo: ")
+            server.subscribe_group_chat(grup_id, callback)
+            time.sleep(2)
+            print("Bienvenido al grupo")
+            chat_grupal(server, grup_id)
+            time.sleep(1)
+            server.unsubscribe_from_queue(grup_id)
+
         elif opcion == 3:
-            run_get_all_clients()
+            print("Buscando chats...")
+            server.discover_chats(callback)
+            server.publish_discovery_event()
+            time.sleep(2)
+            server.unsubscribe_from_queue("chat_discovery")
+
         elif opcion == 0:
             delete_user(mi_id)
+            server.unsubscribe_from_queue("event_discovery")
+            server.stop_consuming()
+            server.close_connection()
             print("Saliendo...")
             break
         else:
