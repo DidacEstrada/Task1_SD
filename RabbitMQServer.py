@@ -93,18 +93,19 @@ class RabbitMQServer:
         group_chats = self.get_all_queues_exchange("chat_group_exchange")
         message_body = json.dumps(group_chats).encode('utf-8')
         self.publish_message("chat_discovery_exchange", "chat_discovery_key", message_body)
+        time.sleep(1)
 
 
 # Uso del método get_all_queues
 if __name__ == "__main__":
     server = RabbitMQServer()
     server.connect()
-    #server.create_exchange("chat_group_exchange", "direct")
-    #server.create_exchange("chat_discovery_exchange", "direct")
-    #server.create_queue("chat_discovery")
-    #server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
-    #server.create_queue("event_discovery")
-    #server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
-    queues = server.get_all_queues_exchange("chat_discovery_exchange")
+    server.create_exchange("chat_group_exchange", "direct")
+    server.create_exchange("chat_discovery_exchange", "direct")
+    server.create_queue("chat_discovery")
+    server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
+    server.create_queue("event_discovery")
+    server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
+    queues = server.get_all_queues_exchange("chat_group_exchange")
     print("All queues:", queues)
     server.close_connection()
