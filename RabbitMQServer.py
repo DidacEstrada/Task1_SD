@@ -19,17 +19,15 @@ class RabbitMQServer:
         parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
-        #ergewwe
-    def sub_insulting_server(self, queue_name, callback):
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-    def create_exchange(self, exchange_name, exchange_type='direct'):
+
+    def create_exchange(self, exchange_name, exchange_type):
         self.channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type)
 
     def create_queue(self, queue_name):
         self.channel.queue_declare(queue=queue_name)
 
-    def bind_queue_to_exchange(self, queue_name, exchange_name, routing_key):
-        self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=routing_key)
+    def bind_queue_to_exchange(self, queue_name, exchange_name):
+        self.channel.queue_bind(exchange=exchange_name, queue=queue_name)
 
     def subscribe_to_queue(self, queue_name, callback):
         self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
@@ -39,6 +37,9 @@ class RabbitMQServer:
 
     def stop_consuming(self):
         self.channel.stop_consuming()
+
+    def send_insult(self, insult):
+        self.publish_message('', "insulting_server", insult)
 
     def get_all_queues(self):
         url = f'http://{self.host}:{self.management_port}/api/queues'
@@ -50,19 +51,33 @@ class RabbitMQServer:
             print("Failed to fetch queues:", response.text)
             return []
 
-    def subscribe_group_chat(self, queue_name, callback):
-        all_queues = self.get_all_queues_exchange("chat_group_exchange")
-        if queue_name in all_queues:
-            self.subscribe_to_queue(queue_name, callback)
+    def exchange_exists(self, exchange_name):
+        url = f'http://{self.host}:{self.management_port}/api/exchanges/%2f/{exchange_name}'
+        response = requests.get(url, auth=(self.username, self.password))
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 404:
+            return False
+        else:
+            print(f"Failed to check exchange existence. Status code: {response.status_code}")
+            return False
+
+    def subscribe_group_chat(self, exchange_name, mi_id, callback):
+        exists = self.exchange_exists(exchange_name)
+        if exists:
+            self.create_queue(mi_id)
+            self.bind_queue_to_exchange(mi_id, exchange_name)
+            self.subscribe_to_queue(mi_id, callback)
 
         else:
-            self.channel.queue_declare(queue=queue_name)
-            self.channel.queue_bind(exchange="chat_group_exchange", queue=queue_name, routing_key=queue_name + '_key')
-            time.sleep(1)
-            self.subscribe_to_queue(queue_name, callback)
 
-    def publish_message(self, exchange_name, routing_key, message):
-        self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message)
+            self.create_exchange(exchange_name, "fanout")
+            self.create_queue(mi_id)
+            self.bind_queue_to_exchange(mi_id, exchange_name)
+            self.subscribe_to_queue(mi_id, callback)
+
+    def publish_message(self, exchange_name, message):
+        self.channel.basic_publish(exchange=exchange_name, routing_key='', body=message)
 
     def publish_discovery_event(self):
         self.channel.basic_publish(exchange="chat_discovery_exchange", routing_key='event_discovery_key',
@@ -101,12 +116,13 @@ class RabbitMQServer:
 if __name__ == "__main__":
     server = RabbitMQServer()
     server.connect()
-    #server.create_exchange("chat_group_exchange", "direct")
-    #server.create_exchange("chat_discovery_exchange", "direct")
-    #server.create_queue("chat_discovery")
-    #server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
-    #server.create_queue("event_discovery")
-    #server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
-    queues = server.get_all_queues_exchange("chat_discovery_exchange")
-    print("All queues:", queues)
+    server.create_queue("insulting_server")
+    # server.create_exchange("chat_group_exchange", "direct")
+    # server.create_exchange("chat_discovery_exchange", "direct")
+    # server.create_queue("chat_discovery")
+    # server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
+    # server.create_queue("event_discovery")
+    # server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
+    # queues = server.get_all_queues_exchange("chat_discovery_exchange")
+    # print("All queues:", queues)
     server.close_connection()

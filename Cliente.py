@@ -143,6 +143,10 @@ def callback(ch, method, properties, body):
     print("Mensaje recibido:", body.decode('utf-8'))
 
 
+def callback_insult(ch, method, properties, body):
+    print("Insulto recibido:", body.decode('utf-8'))
+
+
 def callback_discovery(ch, method, properties, body, server, mi_id, ip, port):
     response = {
         "id": mi_id,
@@ -155,26 +159,24 @@ def callback_discovery(ch, method, properties, body, server, mi_id, ip, port):
 
 
 def chat_grupal(server, grup_id):
-    grup_key = grup_id + '_key'
     chat = True
     while chat:
-        mensaje = input()
-        server.publish_message("chat_group_exchange", grup_key, mensaje)
+        mensaje = input("-> ")
+        server.publish_message(grup_id, mensaje)
         print("Mensaje enviado")
         if mensaje == "Adeu":
             chat = False
 
 
 def run():
-
     mi_id, ip, port = run_subscribe()
     threading.Thread(target=grpc_chatPrivadoServer.serve, args=(port,)).start()
     server = RabbitMQServer()
     server.connect()
-    server.subscribe_to_discovery_events(partial(callback_discovery, server=server, mi_id=mi_id, ip=ip, port=port))
+    # server.subscribe_to_discovery_events(partial(callback_discovery, server=server, mi_id=mi_id, ip=ip, port=port))
     threading.Thread(target=server.start_consuming).start()
     time.sleep(0.5)
-    server.create_queue(mi_id)
+    server.subscribe_to_queue("insulting_server", callback_insult)
     time.sleep(0.5)
     while True:
         print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
@@ -188,12 +190,12 @@ def run():
             canviarStatus(mi_id, False)
         elif opcion == 2:
             grup_id = input("Dime el nombre del grupo: ")
-            server.subscribe_group_chat(grup_id, callback)
+            server.subscribe_group_chat(grup_id, mi_id, callback)
             time.sleep(2)
-            print("Bienvenido al grupo")
+            print("Bienvenido al grupo, para salir escribe 'Adeu' ")
             chat_grupal(server, grup_id)
             time.sleep(1)
-            server.unsubscribe_from_queue(grup_id)
+            server.unsubscribe_from_queue(mi_id)
 
         elif opcion == 3:
             print("Buscando chats...")
@@ -204,10 +206,8 @@ def run():
             server.unsubscribe_from_queue("chat_discovery")
 
         elif opcion == 4:
-            server.subscribe_insult_queue(mi_id, callback)
-            time.sleep(2)
             insult = input("Escribe tu insulto: ")
-            server.send_insult(insult, mi_id)
+            server.send_insult(insult)
             time.sleep(1)
 
         elif opcion == 0:
