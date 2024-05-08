@@ -28,9 +28,11 @@ class RabbitMQServer:
 
     def bind_queue_to_exchange(self, queue_name, exchange_name):
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name)
+        print("Binded queue")
 
     def subscribe_to_queue(self, queue_name, callback):
         self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        print("suscrito")
 
     def start_consuming(self):
         self.channel.start_consuming()
@@ -66,17 +68,22 @@ class RabbitMQServer:
         exists = self.exchange_exists(exchange_name)
         if exists:
             self.create_queue(mi_id)
+            time.sleep(1)
             self.bind_queue_to_exchange(mi_id, exchange_name)
+            time.sleep(1)
             self.subscribe_to_queue(mi_id, callback)
-
+            print("Añadido a grupo")
         else:
-
             self.create_exchange(exchange_name, "fanout")
+            time.sleep(1)
             self.create_queue(mi_id)
+            time.sleep(1)
             self.bind_queue_to_exchange(mi_id, exchange_name)
+            time.sleep(1)
             self.subscribe_to_queue(mi_id, callback)
+            print("Grupo creado")
 
-    def publish_message(self, exchange_name, message):
+    def publish_message_group(self, exchange_name, message):
         self.channel.basic_publish(exchange=exchange_name, routing_key='', body=message)
 
     def publish_discovery_event(self):
@@ -96,6 +103,7 @@ class RabbitMQServer:
 
     def unsubscribe_from_queue(self, queue_name):
         self.channel.basic_cancel(queue_name)
+        time.sleep(1)
         print(f"Desuscripción de la cola '{queue_name}' realizada.")
 
     def close_connection(self):
