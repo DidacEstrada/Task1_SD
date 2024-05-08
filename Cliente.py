@@ -174,6 +174,8 @@ def run():
     server.subscribe_to_discovery_events(partial(callback_discovery, server=server, mi_id=mi_id, ip=ip, port=port))
     threading.Thread(target=server.start_consuming).start()
     time.sleep(0.5)
+    server.create_queue(mi_id)
+    time.sleep(0.5)
     while True:
         print("Bienvenido elige una opcion: 1. Connect chat, 2. Subscribe to group chat, 3. Discover chats, "
               "4. Acces to insult server, 0. Exit")
@@ -199,6 +201,13 @@ def run():
             server.publish_discovery_event()
             time.sleep(2)
             server.unsubscribe_from_queue("chat_discovery")
+
+        elif opcion == 4:
+            server.subscribe_insult_queue(mi_id, callback)
+            time.sleep(2)
+            insult = input("Escribe tu insulto: ")
+            server.send_insult(insult, mi_id)
+            time.sleep(1)
 
         elif opcion == 0:
             delete_user(mi_id)
