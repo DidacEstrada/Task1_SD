@@ -19,6 +19,7 @@ class RabbitMQServer:
         parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
+        #ergewwe
     def sub_insulting_server(self, queue_name, callback):
         self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
     def create_exchange(self, exchange_name, exchange_type='direct'):
