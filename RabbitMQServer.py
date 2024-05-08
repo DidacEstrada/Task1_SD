@@ -1,6 +1,3 @@
-import random
-import threading
-
 import pika
 import requests
 import json
@@ -22,10 +19,8 @@ class RabbitMQServer:
         parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
-
-    def subscribe_insult_queue(self, queue_name, callback):
-        self.subscribe_to_queue(queue_name, callback)
-
+    def sub_insulting_server(self, queue_name, callback):
+        self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
     def create_exchange(self, exchange_name, exchange_type='direct'):
         self.channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type)
 
@@ -100,29 +95,17 @@ class RabbitMQServer:
         message_body = json.dumps(group_chats).encode('utf-8')
         self.publish_message("chat_discovery_exchange", "chat_discovery_key", message_body)
 
-    def send_insult(self, insult, id_client):
-        all_queues = self.get_all_queues()
-        if all_queues:
-            # Excluir las colas 'event_discovery' y 'chat_discovery'
-            all_queues = [queue for queue in all_queues if queue not in ['event_discovery', 'chat_discovery', id_client]]
-            if all_queues:
-                random_queue = random.choice(all_queues)
-                self.publish_message('', random_queue, insult)
-            else:
-                print("No hay colas disponibles para enviar el insulto.")
-        else:
-            print("No se encontraron colas disponibles.")
 
 # Uso del método get_all_queues
 if __name__ == "__main__":
     server = RabbitMQServer()
     server.connect()
-    server.create_exchange("chat_group_exchange", "direct")
-    server.create_exchange("chat_discovery_exchange", "direct")
-    server.create_queue("chat_discovery")
-    server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
-    server.create_queue("event_discovery")
-    server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
+    #server.create_exchange("chat_group_exchange", "direct")
+    #server.create_exchange("chat_discovery_exchange", "direct")
+    #server.create_queue("chat_discovery")
+    #server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
+    #server.create_queue("event_discovery")
+    #server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
     queues = server.get_all_queues_exchange("chat_discovery_exchange")
     print("All queues:", queues)
     server.close_connection()
