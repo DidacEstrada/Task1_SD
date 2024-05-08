@@ -198,6 +198,7 @@ def run():
         elif opcion == 3:
             print("Buscando chats...")
             server.discover_chats(callback)
+            time.sleep(2)
             server.publish_discovery_event()
             time.sleep(2)
             server.unsubscribe_from_queue("chat_discovery")
