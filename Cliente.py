@@ -191,12 +191,12 @@ def run():
             canviarStatus(mi_id, False)
         elif opcion == 2:
             grup_id = input("Dime el nombre del grupo: ")
-            server.subscribe_group_chat(grup_id, mi_id, callback)
+            tag = server.subscribe_group_chat(grup_id, mi_id, callback)
             time.sleep(2)
             print("Bienvenido al grupo, para salir escribe 'Adeu' ")
             chat_grupal(server, grup_id)
             time.sleep(1)
-            server.unsubscribe_from_queue(mi_id)
+            server.unsubscribe_from_queue(tag)
 
         elif opcion == 3:
             print("Buscando chats...")
@@ -213,7 +213,6 @@ def run():
 
         elif opcion == 0:
             delete_user(mi_id)
-            server.unsubscribe_from_queue("event_discovery")
             server.stop_consuming()
             server.close_connection()
             print("Saliendo...")

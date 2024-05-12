@@ -31,8 +31,9 @@ class RabbitMQServer:
         print("Binded queue")
 
     def subscribe_to_queue(self, queue_name, callback):
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        consumer_tag = self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
         print("suscrito")
+        return consumer_tag
 
     def start_consuming(self):
         self.channel.start_consuming()
@@ -41,7 +42,7 @@ class RabbitMQServer:
         self.channel.stop_consuming()
 
     def send_insult(self, insult):
-        self.publish_message('', "insulting_server", insult)
+        self.channel.basic_publish(exchange='', routing_key="insulting_server", body=insult)
 
     def get_all_queues(self):
         url = f'http://{self.host}:{self.management_port}/api/queues'
@@ -71,8 +72,9 @@ class RabbitMQServer:
             time.sleep(1)
             self.bind_queue_to_exchange(mi_id, exchange_name)
             time.sleep(1)
-            self.subscribe_to_queue(mi_id, callback)
+            tag = self.subscribe_to_queue(mi_id, callback)
             print("Añadido a grupo")
+            return tag
         else:
             self.create_exchange(exchange_name, "fanout")
             time.sleep(1)
@@ -80,8 +82,9 @@ class RabbitMQServer:
             time.sleep(1)
             self.bind_queue_to_exchange(mi_id, exchange_name)
             time.sleep(1)
-            self.subscribe_to_queue(mi_id, callback)
+            tag = self.subscribe_to_queue(mi_id, callback)
             print("Grupo creado")
+            return tag
 
     def publish_message_group(self, exchange_name, message):
         self.channel.basic_publish(exchange=exchange_name, routing_key='', body=message)
@@ -101,10 +104,10 @@ class RabbitMQServer:
             print(f"Error al obtener las colas de la exchange {exchange_name}: {e}")
             return []
 
-    def unsubscribe_from_queue(self, queue_name):
-        self.channel.basic_cancel(queue_name)
+    def unsubscribe_from_queue(self, consumer_tag):
+        self.channel.basic_cancel(consumer_tag)
         time.sleep(1)
-        print(f"Desuscripción de la cola '{queue_name}' realizada.")
+        print(f"Desuscripción realizada.")
 
     def close_connection(self):
         if self.connection:
