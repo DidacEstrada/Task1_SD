@@ -4,4 +4,4 @@
 
 2. Ejecutar primero el script 'start-server.py'
 
-3. Ejecuctar el script 'start-client.sh'
+3. Ejecuctar el script 'start-client.py'
