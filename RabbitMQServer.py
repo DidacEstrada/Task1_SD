@@ -28,11 +28,14 @@ class RabbitMQServer:
 
     def bind_queue_to_exchange(self, queue_name, exchange_name):
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name)
-        print("Binded queue")
+
+
+    def bind_queue_to_exchange_direct(self, queue_name, exchange_name, key):
+        self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=key)
+
 
     def subscribe_to_queue(self, queue_name, callback):
         consumer_tag = self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-        print("suscrito")
         return consumer_tag
 
     def start_consuming(self):
@@ -44,15 +47,8 @@ class RabbitMQServer:
     def send_insult(self, insult):
         self.channel.basic_publish(exchange='', routing_key="insulting_server", body=insult)
 
-    def get_all_queues(self):
-        url = f'http://{self.host}:{self.management_port}/api/queues'
-        response = requests.get(url, auth=(self.username, self.password))
-        if response.status_code == 200:
-            queues = [queue['name'] for queue in response.json()]
-            return queues
-        else:
-            print("Failed to fetch queues:", response.text)
-            return []
+    def publish_message(self, exchange_name, routing_key, message):
+        self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message)
 
     def exchange_exists(self, exchange_name):
         url = f'http://{self.host}:{self.management_port}/api/exchanges/%2f/{exchange_name}'
@@ -63,6 +59,17 @@ class RabbitMQServer:
             return False
         else:
             print(f"Failed to check exchange existence. Status code: {response.status_code}")
+            return False
+
+    def queue_exists(self, queue_name):
+        url = f'http://{self.host}:{self.management_port}/api/queues/%2f/{queue_name}'
+        response = requests.get(url, auth=(self.username, self.password))
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 404:
+            return False
+        else:
+            print(f"Failed to check queue existence. Status code: {response.status_code}")
             return False
 
     def subscribe_group_chat(self, exchange_name, mi_id, callback):
@@ -86,23 +93,13 @@ class RabbitMQServer:
             print("Grupo creado")
             return tag
 
-    def publish_message_group(self, exchange_name, message):
+    def publish_message_fanout(self, exchange_name, message):
         self.channel.basic_publish(exchange=exchange_name, routing_key='', body=message)
 
-    def publish_discovery_event(self):
-        self.channel.basic_publish(exchange="chat_discovery_exchange", routing_key='event_discovery_key',
-                                   body="Quien esta conectado?")
-
-    def get_all_queues_exchange(self, exchange_name):
-        url = f"http://{self.host}:{self.management_port}/api/exchanges/%2f/{exchange_name}/bindings/source"
-        try:
-            response = requests.get(url, auth=(self.username, self.password))
-            response.raise_for_status()  # Lanza una excepción si la respuesta no es exitosa
-            queues = [binding['destination'] for binding in response.json()]
-            return queues
-        except requests.exceptions.RequestException as e:
-            print(f"Error al obtener las colas de la exchange {exchange_name}: {e}")
-            return []
+    def publish_discovery_event(self, mi_id):
+        message = mi_id + ',Quien esta conectado?'
+        self.channel.basic_publish(exchange="discovery_event_exchange", routing_key='',
+                                   body=message)
 
     def unsubscribe_from_queue(self, consumer_tag):
         self.channel.basic_cancel(consumer_tag)
@@ -113,27 +110,34 @@ class RabbitMQServer:
         if self.connection:
             self.connection.close()
 
-    def subscribe_to_discovery_events(self, callback):
-        self.channel.basic_consume(queue="event_discovery", on_message_callback=callback, auto_ack=True)
+    def subscribe_to_discovery_events(self, callback, mi_id):
+        queue = mi_id + '_event'
+        exists = self.queue_exists(queue)
+        if exists:
+            tag = self.subscribe_to_queue(queue, callback)
+            return tag
+        else:
+            self.create_queue(queue)
+            time.sleep(1)
+            self.bind_queue_to_exchange(queue, "discovery_event_exchange")
+            time.sleep(1)
+            tag = self.subscribe_to_queue(queue, callback)
+            return tag
 
-    def discover_chats(self, callback):
-        self.channel.basic_consume(queue="chat_discovery", on_message_callback=callback, auto_ack=True)
-        group_chats = self.get_all_queues_exchange("chat_group_exchange")
-        message_body = json.dumps(group_chats).encode('utf-8')
-        self.publish_message("chat_discovery_exchange", "chat_discovery_key", message_body)
-
+    def subscribe_to_chat_discovery(self, callback, mi_id):
+        queue = mi_id + '_discovery'
+        self.create_queue(queue)
+        time.sleep(1)
+        self.bind_queue_to_exchange_direct(queue, "chat_discovery_exchange", queue + '_key')
+        time.sleep(1)
+        tag = self.subscribe_to_queue(queue, callback)
+        return tag
 
 # Uso del método get_all_queues
 if __name__ == "__main__":
     server = RabbitMQServer()
     server.connect()
     server.create_queue("insulting_server")
-    # server.create_exchange("chat_group_exchange", "direct")
-    # server.create_exchange("chat_discovery_exchange", "direct")
-    # server.create_queue("chat_discovery")
-    # server.bind_queue_to_exchange("chat_discovery", "chat_discovery_exchange", "chat_discovery_key")
-    # server.create_queue("event_discovery")
-    # server.bind_queue_to_exchange("event_discovery", "chat_discovery_exchange", "event_discovery_key")
-    # queues = server.get_all_queues_exchange("chat_discovery_exchange")
-    # print("All queues:", queues)
+    server.create_exchange("discovery_event_exchange", "fanout")
+    server.create_exchange("chat_discovery_exchange", "direct")
     server.close_connection()
